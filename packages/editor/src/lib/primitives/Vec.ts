@@ -1,5 +1,6 @@
 import { VecModel } from '@tldraw/tlschema'
 import { EASINGS } from './easings'
+import { toFixed } from './utils'
 
 /** @public */
 export type VecLike = Vec | VecModel
@@ -302,22 +303,35 @@ export class Vec {
 		return new Vec(-A.x, -A.y)
 	}
 
+	/**
+	 * Get the perpendicular vector to A.
+	 */
 	static Per(A: VecLike): Vec {
 		return new Vec(A.y, -A.x)
-	}
-
-	static Dist2(A: VecLike, B: VecLike): number {
-		return Vec.Sub(A, B).len2()
 	}
 
 	static Abs(A: VecLike): Vec {
 		return new Vec(Math.abs(A.x), Math.abs(A.y))
 	}
 
+	// Get the distance between two points.
 	static Dist(A: VecLike, B: VecLike): number {
-		return Math.hypot(A.y - B.y, A.x - B.x)
+		return ((A.y - B.y) ** 2 + (A.x - B.x) ** 2) ** 0.5
 	}
 
+	// Get whether a distance between two points is less than a number. This is faster to calulate than using `Vec.Dist(a, b) < n`.
+	static DistMin(A: VecLike, B: VecLike, n: number): boolean {
+		return (A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y) < n ** 2
+	}
+
+	// Get the squared distance between two points. This is faster to calculate (no square root) so useful for "minimum distance" checks where the actual measurement does not matter.
+	static Dist2(A: VecLike, B: VecLike): number {
+		return (A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y)
+	}
+
+	/**
+	 * Dot product of two vectors which is used to calculate the angle between them.
+	 */
 	static Dpr(A: VecLike, B: VecLike): number {
 		return A.x * B.x + A.y * B.y
 	}
@@ -330,6 +344,9 @@ export class Vec {
 		)
 	}
 
+	/**
+	 * Cross product of two vectors which is used to calculate the area of a parallelogram.
+	 */
 	static Cpr(A: VecLike, B: VecLike) {
 		return A.x * B.y - B.x * A.y
 	}
@@ -339,13 +356,19 @@ export class Vec {
 	}
 
 	static Len(A: VecLike): number {
-		return Math.hypot(A.x, A.y)
+		return (A.x * A.x + A.y * A.y) ** 0.5
 	}
 
+	/**
+	 * Get the projection of A onto B.
+	 */
 	static Pry(A: VecLike, B: VecLike): number {
 		return Vec.Dpr(A, B) / Vec.Len(B)
 	}
 
+	/**
+	 * Get the unit vector of A.
+	 */
 	static Uni(A: VecLike) {
 		return Vec.Div(A, Vec.Len(A))
 	}
@@ -400,10 +423,11 @@ export class Vec {
 	}
 
 	static NearestPointOnLineSegment(A: VecLike, B: VecLike, P: VecLike, clamp = true): Vec {
+		if (Vec.Equals(A, P)) return Vec.From(P)
+		if (Vec.Equals(B, P)) return Vec.From(P)
+
 		const u = Vec.Tan(B, A)
 		const C = Vec.Add(A, Vec.Mul(u, Vec.Sub(P, A).pry(u)))
-
-		// todo: fix error P is B or A, which leads to a NaN value
 
 		if (clamp) {
 			if (C.x < Math.min(A.x, B.x)) return Vec.Cast(A.x < B.x ? A : B)
@@ -437,10 +461,21 @@ export class Vec {
 		return (A.y - B.y) / (A.x - B.x)
 	}
 
+	static IsNaN(A: VecLike): boolean {
+		return isNaN(A.x) || isNaN(A.y)
+	}
+
 	static Angle(A: VecLike, B: VecLike): number {
 		return Math.atan2(B.y - A.y, B.x - A.x)
 	}
 
+	/**
+	 * Linearly interpolate between two points.
+	 * @param A - The first point.
+	 * @param B - The second point.
+	 * @param t - The interpolation value between 0 and 1.
+	 * @returns The interpolated point.
+	 */
 	static Lrp(A: VecLike, B: VecLike, t: number): Vec {
 		return Vec.Sub(B, A).mul(t).add(A)
 	}
@@ -470,8 +505,20 @@ export class Vec {
 		return Vec.Sub(A, origin).mul(scale).add(origin)
 	}
 
-	static ToFixed(A: VecLike, n = 2) {
-		return new Vec(+A.x.toFixed(n), +A.y.toFixed(n), +A.z!.toFixed(n))
+	static ToFixed(A: VecLike) {
+		return new Vec(toFixed(A.x), toFixed(A.y))
+	}
+
+	static ToInt(A: VecLike) {
+		return new Vec(
+			parseInt(A.x.toFixed(0)),
+			parseInt(A.y.toFixed(0)),
+			parseInt((A.z ?? 0).toFixed(0))
+		)
+	}
+
+	static ToCss(A: VecLike) {
+		return `${A.x},${A.y}`
 	}
 
 	static Nudge(A: VecLike, B: VecLike, distance: number) {
@@ -505,6 +552,9 @@ export class Vec {
 	static Average(arr: VecLike[]) {
 		const len = arr.length
 		const avg = new Vec(0, 0)
+		if (len === 0) {
+			return avg
+		}
 		for (let i = 0; i < len; i++) {
 			avg.add(arr[i])
 		}

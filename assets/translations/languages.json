@@ -48,6 +48,14 @@
 		"label": "עברית"
 	},
 	{
+		"locale": "hr",
+		"label": "Hrvatski"
+	},
+	{
+		"locale": "id",
+		"label": "Bahasa Indonesia"
+	},
+	{
 		"locale": "it",
 		"label": "Italiano"
 	},
@@ -102,6 +110,14 @@
 	{
 		"locale": "ru",
 		"label": "Russian"
+	},
+	{
+		"locale": "sl",
+		"label": "Slovenščina"
+	},
+	{
+		"locale": "so",
+		"label": "Somali"
 	},
 	{
 		"locale": "sv",

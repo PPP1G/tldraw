@@ -1,19 +1,21 @@
-export type InputCategory = {
+export interface InputCategory {
 	id: string
 	title: string
 	description: string
 	groups: InputGroup[]
+	hero: string | null
 }
 
-export type InputSection = {
+export interface InputSection {
 	id: string
 	title: string
 	description: string
 	categories: InputCategory[]
-	sidebar_behavior: 'show-links' | 'show-title'
+	hero: string | null
+	sidebar_behavior: 'show-links' | 'show-title' | 'hidden' | 'reference'
 }
 
-export type InputGroup = {
+export interface InputGroup {
 	id: string
 }
 
@@ -55,7 +57,9 @@ export interface Section extends ContentPage {
 	/** An array of this section's categories. */
 	categories: Category[]
 	/** How the section should appear in the sidebar. */
-	sidebar_behavior: 'show-links' | 'show-title'
+	sidebar_behavior: 'show-links' | 'show-title' | 'hidden' | 'reference'
+	/** The section's hero image (optional). */
+	hero: string | null
 }
 
 export interface Category extends ContentPage {
@@ -66,6 +70,8 @@ export interface Category extends ContentPage {
 	index: number
 	/** The category's groups */
 	groups: Group[]
+	/** The category's hero image (optional). */
+	hero: string | null
 }
 
 export interface Group extends ContentPage {
@@ -93,7 +99,9 @@ export interface Article extends ContentPage {
 	/** The index of this article inside of the article's section. */
 	sectionIndex: number
 	/** The article's author details (optional). */
-	author: Author['id'] | null
+	author: Author['id'][]
+	/** The article's author username (optional). */
+	authorId: string
 	/** The article's hero image (optional). */
 	hero: string | null
 	/** The article's status (draft, published, hidden, etc) */
@@ -104,6 +112,12 @@ export interface Article extends ContentPage {
 	keywords: string[]
 	/** The URL where the article's source can be found. */
 	sourceUrl: string | null
+	/** The article's code example (optional). */
+	componentCode: string | null
+	/** The article's code example files, JSON stringified (optional). */
+	componentCodeFiles: string | null
+	/** Tags for this item if it's a reference page */
+	apiTags: string | null
 }
 
 export enum ArticleStatus {
@@ -112,16 +126,24 @@ export enum ArticleStatus {
 	Unlisted = 'unlisted',
 }
 
+export enum APIGroup {
+	Class = 'Class',
+	Function = 'Function',
+	Variable = 'Variable',
+	Enum = 'Enum',
+	Interface = 'Interface',
+	TypeAlias = 'TypeAlias',
+	Namespace = 'Namespace',
+	Component = 'Component',
+}
+
 /* ---------------- Article Headings ---------------- */
 
 export interface ArticleHeading {
 	level: number
 	title: string
 	slug: string
-	isCode: boolean
 }
-
-export type ArticleHeadings = ArticleHeading[]
 
 /* ------------------ Article Links ----------------- */
 
@@ -130,7 +152,7 @@ export type ArticleLink = Pick<
 	'id' | 'title' | 'description' | 'categoryId' | 'sectionId' | 'path'
 >
 
-export type ArticleLinks = {
+export interface ArticleLinks {
 	prev: ArticleLink | null
 	next: ArticleLink | null
 }
@@ -155,7 +177,8 @@ export interface SidebarContentCategoryLink extends BaseSidebarLink {
 
 export interface SidebarContentArticleLink extends BaseSidebarLink {
 	type: 'article'
-	articleId: string
+	articleId: string | null
+	groupId: string | null
 }
 
 export type SidebarContentLink =
@@ -163,11 +186,12 @@ export type SidebarContentLink =
 	| SidebarContentCategoryLink
 	| SidebarContentArticleLink
 
-export type SidebarContentList = {
+export interface SidebarContentList {
 	sectionId: string | null
 	categoryId: string | null
 	articleId: string | null
 	links: SidebarContentLink[]
+	activeId?: string | null
 }
 
 /* ---------- Finished / generated content ---------- */
@@ -175,4 +199,7 @@ export type SidebarContentList = {
 /** A table keyed by slug of articles. */
 export type Articles = Record<string, Article>
 
-export type GeneratedContent = { sections: Section[]; articles: Articles }
+export interface GeneratedContent {
+	sections: Section[]
+	articles: Articles
+}

@@ -1,4 +1,4 @@
-import { TLShapeId, createShapeId } from '@tldraw/editor'
+import { TLShapeId, Vec, createShapeId } from '@tldraw/editor'
 import { TestEditor } from '../TestEditor'
 
 let editor: TestEditor
@@ -38,23 +38,23 @@ function nudgeAndGet(ids: TLShapeId[], key: string, shiftKey: boolean) {
 	const step = editor.getInstanceState().isGridMode ? (shiftKey ? 50 : 10) : shiftKey ? 10 : 1
 	switch (key) {
 		case 'ArrowLeft': {
-			editor.mark('nudge')
-			editor.nudgeShapes(editor.getSelectedShapeIds(), { x: -step, y: 0 })
+			editor.markHistoryStoppingPoint('nudge')
+			editor.nudgeShapes(editor.getSelectedShapeIds(), new Vec(-step, 0))
 			break
 		}
 		case 'ArrowRight': {
-			editor.mark('nudge')
-			editor.nudgeShapes(editor.getSelectedShapeIds(), { x: step, y: 0 })
+			editor.markHistoryStoppingPoint('nudge')
+			editor.nudgeShapes(editor.getSelectedShapeIds(), new Vec(step, 0))
 			break
 		}
 		case 'ArrowUp': {
-			editor.mark('nudge')
-			editor.nudgeShapes(editor.getSelectedShapeIds(), { x: 0, y: -step })
+			editor.markHistoryStoppingPoint('nudge')
+			editor.nudgeShapes(editor.getSelectedShapeIds(), new Vec(0, -step))
 			break
 		}
 		case 'ArrowDown': {
-			editor.mark('nudge')
-			editor.nudgeShapes(editor.getSelectedShapeIds(), { x: 0, y: step })
+			editor.markHistoryStoppingPoint('nudge')
+			editor.nudgeShapes(editor.getSelectedShapeIds(), new Vec(0, step))
 			break
 		}
 	}

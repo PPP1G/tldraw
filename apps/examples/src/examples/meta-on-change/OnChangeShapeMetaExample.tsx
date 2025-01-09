@@ -1,5 +1,5 @@
-import { TLShape, Tldraw, track, useEditor } from '@tldraw/tldraw'
-import '@tldraw/tldraw/tldraw.css'
+import { TLShape, Tldraw, track, useEditor } from 'tldraw'
+import 'tldraw/tldraw.css'
 
 // There's a guide at the bottom of this file!
 
@@ -46,7 +46,7 @@ export const MetaUiHelper = track(function MetaUiHelper() {
 	return (
 		<pre style={{ position: 'absolute', zIndex: 300, top: 64, left: 12, margin: 0 }}>
 			{onlySelectedShape
-				? JSON.stringify(onlySelectedShape.meta, null, 2)
+				? JSON.stringify(onlySelectedShape.meta, null, '\t')
 				: 'Select one shape to see its meta data.'}
 		</pre>
 	)
