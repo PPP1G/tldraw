@@ -1,6 +1,9 @@
 ---
 title: Canvas events
 component: ./CanvasEventsExample.tsx
+category: editor-api
+priority: 2
+keywords: [cursor, pointer, mouse, click, keyboard, handler, input]
 ---
 
 Listen to events from tldraw's canvas.

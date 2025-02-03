@@ -38,7 +38,7 @@ Object.defineProperty(global.URL, 'createObjectURL', {
 const { version } = require('./package.json')
 
 window.fetch = async (input, init) => {
-	if (input === `https://unpkg.com/@tldraw/assets@${version}/translations/en.json`) {
+	if (input === `https://cdn.tldraw.com/${version}/translations/en.json`) {
 		const json = await import('@tldraw/assets/translations/main.json')
 		return {
 			ok: true,
@@ -55,3 +55,18 @@ window.fetch = async (input, init) => {
 
 	throw new Error(`Unhandled request: ${input}`)
 }
+
+window.DOMRect = class DOMRect {
+	static fromRect(rect) {
+		return new DOMRect(rect.x, rect.y, rect.width, rect.height)
+	}
+	constructor(x, y, width, height) {
+		this.x = x
+		this.y = y
+		this.width = width
+		this.height = height
+	}
+}
+
+global.TextEncoder = require('util').TextEncoder
+global.TextDecoder = require('util').TextDecoder

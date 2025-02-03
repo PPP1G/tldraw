@@ -3,7 +3,8 @@ import { createUseGesture, pinchAction, wheelAction } from '@use-gesture/react'
 import * as React from 'react'
 import { TLWheelEventInfo } from '../editor/types/event-types'
 import { Vec } from '../primitives/Vec'
-import { preventDefault } from '../utils/dom'
+import { preventDefault, stopEventPropagation } from '../utils/dom'
+import { isAccelKey } from '../utils/keyboard'
 import { normalizeWheel } from '../utils/normalizeWheel'
 import { useEditor } from './useEditor'
 
@@ -112,23 +113,21 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 			}
 
 			preventDefault(event)
+			stopEventPropagation(event)
 			const delta = normalizeWheel(event)
 
 			if (delta.x === 0 && delta.y === 0) return
-
-			const container = editor.getContainer().getBoundingClientRect()
 
 			const info: TLWheelEventInfo = {
 				type: 'wheel',
 				name: 'wheel',
 				delta,
-				point: new Vec(event.clientX, event.clientY).sub({
-					x: container.left,
-					y: container.top,
-				}),
+				point: new Vec(event.clientX, event.clientY),
 				shiftKey: event.shiftKey,
 				altKey: event.altKey,
 				ctrlKey: event.metaKey || event.ctrlKey,
+				metaKey: event.metaKey,
+				accelKey: isAccelKey(event),
 			}
 
 			editor.dispatch(info)
@@ -165,6 +164,8 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 				shiftKey: event.shiftKey,
 				altKey: event.altKey,
 				ctrlKey: event.metaKey || event.ctrlKey,
+				metaKey: event.metaKey,
+				accelKey: isAccelKey(event),
 			})
 		}
 
@@ -248,6 +249,8 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 						shiftKey: event.shiftKey,
 						altKey: event.altKey,
 						ctrlKey: event.metaKey || event.ctrlKey,
+						metaKey: event.metaKey,
+						accelKey: isAccelKey(event),
 					})
 					break
 				}
@@ -260,6 +263,8 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 						shiftKey: event.shiftKey,
 						altKey: event.altKey,
 						ctrlKey: event.metaKey || event.ctrlKey,
+						metaKey: event.metaKey,
+						accelKey: isAccelKey(event),
 					})
 					break
 				}
@@ -277,7 +282,7 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 
 			pinchState = 'not sure'
 
-			requestAnimationFrame(() => {
+			editor.timers.requestAnimationFrame(() => {
 				editor.dispatch({
 					type: 'pinch',
 					name: 'pinch_end',
@@ -286,6 +291,8 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 					shiftKey: event.shiftKey,
 					altKey: event.altKey,
 					ctrlKey: event.metaKey || event.ctrlKey,
+					metaKey: event.metaKey,
+					accelKey: isAccelKey(event),
 				})
 			})
 		}
@@ -304,7 +311,12 @@ export function useGestureEvents(ref: React.RefObject<HTMLDivElement>) {
 		pinch: {
 			from: () => [editor.getZoomLevel(), 0], // Return the camera z to use when pinch starts
 			scaleBounds: () => {
-				return { from: editor.getZoomLevel(), max: 8, min: 0.05 }
+				const baseZoom = editor.getBaseZoom()
+				const zoomSteps = editor.getCameraOptions().zoomSteps
+				const zoomMin = zoomSteps[0] * baseZoom
+				const zoomMax = zoomSteps[zoomSteps.length - 1] * baseZoom
+
+				return { from: editor.getZoomLevel(), max: zoomMax, min: zoomMin }
 			},
 		},
 	})
